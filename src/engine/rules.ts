@@ -1,0 +1,257 @@
+import type { MarketRules, RulesId } from './types'
+
+// 时间以「自 00:00 起的分钟数」表示
+const hm = (h: number, m: number) => h * 60 + m
+
+/**
+ * 规则包说明：
+ * - 「教学市场」为本游戏默认规则，参数为教学目的设定，不对应任何真实交易所。
+ * - 「A 股风格」「美股风格」为公开规则的教学近似。费率、交收、涨跌幅等参数会随监管调整而变化，
+ *   正式使用前须以交易所、监管机构与券商的最新官方资料核对，不得视为永不变化的现行规则。
+ */
+export const RULE_PACKS: Record<RulesId, MarketRules> = {
+  teaching: {
+    id: 'teaching',
+    name: '教学市场',
+    version: 'teaching-1.0.0',
+    effectiveDate: '游戏内规则（自 V1.0 起）',
+    source: '像素证券城教学规则（虚构），参数为教学目的设定',
+    notes: [
+      '单只股票每日涨跌幅限制 ±10%，风险警示股 ±5%。',
+      '买入股票于下一交易日起可卖（T+1），卖出所得现金立即可用。',
+      '最小买入单位 10 股，卖出可一次性卖出不足 10 股的零股。',
+      '盘口由模拟引擎按流动性档位生成，并非真实参与者订单；被动挂单按价格优先、时间优先近似估算成交。',
+      '市价单设有 ±5% 保护价，超出部分不成交；剩余部分在当日有效期内继续撮合。',
+      '保证金与卖空默认关闭，完成风险管理学习后可在「进阶模式」开启。',
+      '分红税率统一按 10% 简化处理。',
+    ],
+    timezone: '像素城标准时间 (UTC+8)',
+    currency: 'CNY',
+    currencySymbol: '¥',
+    sessions: {
+      preopen: [hm(9, 0), hm(9, 15)],
+      opening: [hm(9, 15), hm(9, 30)],
+      continuous: [
+        [hm(9, 30), hm(11, 30)],
+        [hm(13, 0), hm(14, 50)],
+      ],
+      closing: [hm(14, 50), hm(15, 0)],
+      postclose: [hm(15, 0), hm(15, 30)],
+      openingAuction: true,
+      closingAuction: false,
+    },
+    holidays: ['01-01', '05-01', '10-01', '10-02', '10-03'],
+    tickSize: 1,
+    lotSize: 10,
+    oddLotSellAllowed: true,
+    orderTypes: ['market', 'limit', 'stop', 'stopLimit'],
+    tifs: ['DAY', 'GTC', 'IOC'],
+    phaseOrderTypes: {
+      closed: ['limit', 'stop', 'stopLimit'],
+      preopen: ['limit', 'stop', 'stopLimit'],
+      opening: ['market', 'limit', 'stop', 'stopLimit'],
+      continuous: ['market', 'limit', 'stop', 'stopLimit'],
+      break: ['limit', 'stop', 'stopLimit'],
+      closing: ['market', 'limit', 'stop', 'stopLimit'],
+      postclose: ['limit', 'stop', 'stopLimit'],
+    },
+    marketRemainder: 'continue',
+    maxGtcDays: 30,
+    fees: {
+      version: 'teaching-fee-1.0',
+      commissionRate: 0.0003,
+      minCommission: 500,
+      exchangeFeeRate: 0.00005,
+      regulatoryFeeRate: 0,
+      stampTaxSellRate: 0.0005,
+      transferFeeRate: 0.00001,
+      mode: 'perOrder',
+    },
+    priceLimit: { enabled: true, pct: 0.1, riskWarningPct: 0.05 },
+    settlement: { sharesSellableAfterDays: 1, saleCashAvailableAfterDays: 0, label: 'T+1 可卖' },
+    shortSelling: { enabled: true, baseBorrowRate: 0.06 },
+    margin: { enabled: true, initialMargin: 0.5, maintenanceMargin: 0.3, liquidationMargin: 0.2, interestRate: 0.065, callGraceDays: 1 },
+    dividendTaxRate: 0.1,
+    colorConvention: 'redUp',
+    stopTrigger: 'last',
+    riskLimit: { maxOrderPctOfEquity: 0.6 },
+  },
+  ashare: {
+    id: 'ashare',
+    name: 'A 股风格（教学近似）',
+    version: 'ashare-approx-1.0.0',
+    effectiveDate: '参数参考日期：2023-08-28（印花税减半征收后）',
+    source: '参考沪深交易所公开交易规则与公开费率的教学近似；以交易所/证监会/券商最新官方资料为准',
+    notes: [
+      '主板个股涨跌幅 ±10%，风险警示股 ±5%（创业板/科创板 ±20% 未在本规则包中模拟）。',
+      '股票 T+1：当日买入次一交易日方可卖出；卖出资金当日可用于买入。',
+      '买入须为 100 股整数倍，零股只能一次性卖出。',
+      '9:15–9:30 开盘集合竞价仅接受限价单；14:57–15:00 收盘集合竞价。',
+      '市价单按「最优五档即时成交剩余撤销」近似处理。',
+      '佣金按券商常见水平近似（万 2.5，最低 5 元）；卖出印花税 0.05%；过户费 0.001%。',
+      '融资融券在本规则包中未启用。',
+      '红利税按持股期限差别化征收，本规则包统一按 10% 简化。',
+    ],
+    timezone: '北京时间 (UTC+8)',
+    currency: 'CNY',
+    currencySymbol: '¥',
+    sessions: {
+      preopen: [hm(9, 0), hm(9, 15)],
+      opening: [hm(9, 15), hm(9, 30)],
+      continuous: [
+        [hm(9, 30), hm(11, 30)],
+        [hm(13, 0), hm(14, 57)],
+      ],
+      closing: [hm(14, 57), hm(15, 0)],
+      postclose: [hm(15, 0), hm(15, 30)],
+      openingAuction: true,
+      closingAuction: true,
+    },
+    holidays: ['01-01', '05-01', '05-02', '10-01', '10-02', '10-03', '10-04'],
+    tickSize: 1,
+    lotSize: 100,
+    oddLotSellAllowed: true,
+    orderTypes: ['market', 'limit', 'stop', 'stopLimit'],
+    tifs: ['DAY', 'GTC', 'IOC'],
+    phaseOrderTypes: {
+      closed: ['limit', 'stop', 'stopLimit'],
+      preopen: ['limit', 'stop', 'stopLimit'],
+      opening: ['limit'],
+      continuous: ['market', 'limit', 'stop', 'stopLimit'],
+      break: ['limit', 'stop', 'stopLimit'],
+      closing: ['limit'],
+      postclose: ['limit', 'stop', 'stopLimit'],
+    },
+    marketRemainder: 'cancel',
+    maxGtcDays: 20,
+    fees: {
+      version: 'ashare-fee-2023.08',
+      commissionRate: 0.00025,
+      minCommission: 500,
+      exchangeFeeRate: 0.0000341,
+      regulatoryFeeRate: 0.00002,
+      stampTaxSellRate: 0.0005,
+      transferFeeRate: 0.00001,
+      mode: 'perOrder',
+    },
+    priceLimit: { enabled: true, pct: 0.1, riskWarningPct: 0.05 },
+    settlement: { sharesSellableAfterDays: 1, saleCashAvailableAfterDays: 0, label: 'T+1 可卖' },
+    shortSelling: { enabled: false, baseBorrowRate: 0.08 },
+    margin: { enabled: false, initialMargin: 0.5, maintenanceMargin: 0.3, liquidationMargin: 0.2, interestRate: 0.06, callGraceDays: 2 },
+    dividendTaxRate: 0.1,
+    colorConvention: 'redUp',
+    stopTrigger: 'last',
+    riskLimit: { maxOrderPctOfEquity: 1 },
+  },
+  us: {
+    id: 'us',
+    name: '美股风格（教学近似）',
+    version: 'us-approx-1.0.0',
+    effectiveDate: '参数参考日期：2024-05-28（T+1 交收实施后）',
+    source: '参考美国证券市场公开规则（交收周期、Reg T 初始保证金等）的教学近似；以 SEC/FINRA/交易所/券商最新资料为准',
+    notes: [
+      '无日内涨跌幅限制（个股熔断/LULD 机制未模拟）。',
+      '最小交易单位 1 股；碎股交易未模拟。',
+      '交收周期 T+1；本游戏简化为卖出后现金立即可再买入，现金账户的「良好信用违规」规则未模拟。',
+      '盘前时段只接受挂单；9:30 开盘竞价、15:50–16:00 收盘竞价为简化近似。',
+      '佣金为 0（常见零佣金券商），卖出收取监管费近似值；无印花税。',
+      '开启保证金后：初始保证金 50%，维持保证金 30%（券商内部要求常高于 25% 监管下限），低于 20% 触发强制平仓。',
+      '卖空需可借券源，借券费按年化费率逐日计提；股息期间空头需支付等额股息。',
+      '股息税视税务身份而定，本规则包按 0% 简化。',
+    ],
+    timezone: '美东时间 (ET)',
+    currency: 'USD',
+    currencySymbol: '$',
+    sessions: {
+      preopen: [hm(9, 0), hm(9, 20)],
+      opening: [hm(9, 20), hm(9, 30)],
+      continuous: [[hm(9, 30), hm(15, 50)]],
+      closing: [hm(15, 50), hm(16, 0)],
+      postclose: [hm(16, 0), hm(16, 30)],
+      openingAuction: true,
+      closingAuction: true,
+    },
+    holidays: ['01-01', '07-04', '12-25', '11-27'],
+    tickSize: 1,
+    lotSize: 1,
+    oddLotSellAllowed: true,
+    orderTypes: ['market', 'limit', 'stop', 'stopLimit'],
+    tifs: ['DAY', 'GTC', 'IOC'],
+    phaseOrderTypes: {
+      closed: ['limit', 'stop', 'stopLimit'],
+      preopen: ['limit', 'stop', 'stopLimit'],
+      opening: ['market', 'limit'],
+      continuous: ['market', 'limit', 'stop', 'stopLimit'],
+      closing: ['market', 'limit'],
+      postclose: ['limit', 'stop', 'stopLimit'],
+    },
+    marketRemainder: 'continue',
+    maxGtcDays: 60,
+    fees: {
+      version: 'us-fee-2024.05',
+      commissionRate: 0,
+      minCommission: 0,
+      exchangeFeeRate: 0,
+      regulatoryFeeRate: 0.0000278,
+      stampTaxSellRate: 0,
+      transferFeeRate: 0,
+      mode: 'perOrder',
+    },
+    priceLimit: { enabled: false, pct: 1, riskWarningPct: 1 },
+    settlement: { sharesSellableAfterDays: 0, saleCashAvailableAfterDays: 0, label: 'T+1 交收（可当日卖出）' },
+    shortSelling: { enabled: true, baseBorrowRate: 0.03 },
+    margin: { enabled: true, initialMargin: 0.5, maintenanceMargin: 0.3, liquidationMargin: 0.2, interestRate: 0.085, callGraceDays: 2 },
+    dividendTaxRate: 0,
+    colorConvention: 'greenUp',
+    stopTrigger: 'last',
+    riskLimit: { maxOrderPctOfEquity: 1 },
+  },
+}
+
+export function tradingMinutes(r: MarketRules): number {
+  const s = r.sessions
+  return s.continuous.reduce((a, [x, y]) => a + (y - x), 0) + (s.closing[1] - s.closing[0])
+}
+
+export const ORDER_TYPE_LABEL: Record<string, string> = {
+  market: '市价单',
+  limit: '限价单',
+  stop: '止损单',
+  stopLimit: '止损限价单',
+}
+
+export const TIF_LABEL: Record<string, string> = {
+  DAY: '当日有效',
+  GTC: '撤销前有效',
+  IOC: '立即成交剩余撤销',
+}
+
+export const SIDE_LABEL: Record<string, string> = {
+  buy: '买入',
+  sell: '卖出',
+  short: '卖空',
+  cover: '买入平空',
+}
+
+export const STATUS_LABEL: Record<string, string> = {
+  new: '新建',
+  pendingSubmit: '待提交',
+  accepted: '已接受',
+  waitingTrigger: '等待触发',
+  partiallyFilled: '部分成交',
+  filled: '全部成交',
+  cancelPending: '撤单中',
+  cancelled: '已撤销',
+  rejected: '已拒绝',
+  expired: '已过期',
+}
+
+export const PHASE_LABEL: Record<string, string> = {
+  closed: '休市',
+  preopen: '盘前准备',
+  opening: '开盘阶段',
+  continuous: '连续交易',
+  break: '午间休市',
+  closing: '收盘阶段',
+  postclose: '盘后结算',
+}
