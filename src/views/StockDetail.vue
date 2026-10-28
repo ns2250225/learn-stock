@@ -355,12 +355,14 @@ function openNews(id: string) {
       </section>
       <section class="panel">
         <div class="panel-h"><span class="title-cn">股本变动记录</span></div>
-        <table class="tbl">
-          <thead><tr><th>日期</th><th class="num">总股本（百万股）</th><th>说明</th></tr></thead>
-          <tbody>
-            <tr v-for="(s, i) in d.st.shareHistory.slice().reverse()" :key="i"><td>{{ d.e.cal.label(s.day) }}</td><td class="num">{{ fmtNum(s.shares / 1e6, 2) }}</td><td>{{ s.note }}</td></tr>
-          </tbody>
-        </table>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>日期</th><th class="num">总股本（百万股）</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr v-for="(s, i) in d.st.shareHistory.slice().reverse()" :key="i"><td>{{ d.e.cal.label(s.day) }}</td><td class="num">{{ fmtNum(s.shares / 1e6, 2) }}</td><td>{{ s.note }}</td></tr>
+            </tbody>
+          </table>
+        </div>
       </section>
     </div>
 

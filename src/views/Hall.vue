@@ -207,7 +207,7 @@ const nextMission = computed(() => {
         <div class="panel-h"><span class="title">Sentiment</span><span class="tag">{{ sentiment.label }}</span></div>
         <div class="bar"><i :style="{ width: ((sentiment.score + 1) / 2) * 100 + '%', background: 'var(--accent)' }" /></div>
         <div class="row between tiny muted"><span>恐慌</span><span>中性</span><span>亢奋</span></div>
-        <table class="tbl mt-sm">
+        <table class="tbl mt-sm sent-tbl">
           <tbody>
             <tr v-for="p in sentiment.parts" :key="p.label">
               <td>{{ p.label }}</td>
@@ -337,6 +337,10 @@ const nextMission = computed(() => {
 @media (max-width: 860px) {
   .heat {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* 窄屏下允许指标名换行，避免整表横向撑破屏幕 */
+  .sent-tbl td:first-child {
+    white-space: normal;
   }
 }
 </style>

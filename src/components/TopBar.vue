@@ -47,7 +47,7 @@ const MODE: Record<string, string> = { tutorial: '新手教学', free: '自由�
     <template v-if="info">
       <div class="clock row">
         <div class="col gap-sm" style="gap: 0">
-          <span class="num bold">{{ info.date }}</span>
+          <span class="num bold date">{{ info.date }}</span>
           <span class="tiny muted">交易日 #{{ info.td }} · {{ MODE[info.mode] }}<template v-if="info.challenge"> · 挑战{{ info.challenge }}</template></span>
         </div>
         <span class="mid-num accent">{{ info.clock }}</span>
@@ -67,7 +67,7 @@ const MODE: Record<string, string> = { tutorial: '新手教学', free: '自由�
           {{ speedLabel(s) }}
         </button>
         <button class="btn btn-xs" :disabled="game.busy" title="单步推进 1 个模拟分钟" @click="game.stepOnce()">⏭</button>
-        <button class="btn btn-xs" :disabled="game.busy" title="快速推进到今日收盘结算" @click="game.runToClose()">{{ game.busy ? '结算中…' : '⏩ 收盘结算' }}</button>
+        <button class="btn btn-xs" :disabled="game.busy" title="快速推进到今日收盘结算" @click="game.runToClose()">⏩ <span class="hide-mobile">收盘</span>{{ game.busy ? '结算中…' : '结算' }}</button>
       </div>
       <div class="acct row hide-mobile">
         <div class="col right" style="gap: 0">
@@ -119,6 +119,9 @@ const MODE: Record<string, string> = { tutorial: '新手教学', free: '自由�
   padding: 0 4px;
   font-weight: 700;
 }
+.date {
+  white-space: nowrap;
+}
 @media (max-width: 860px) {
   .topbar {
     gap: 6px;
@@ -126,6 +129,10 @@ const MODE: Record<string, string> = { tutorial: '新手教学', free: '自由�
   }
   .brand .logo {
     font-size: 0.6em;
+  }
+  .clock {
+    flex-wrap: wrap;
+    row-gap: 2px;
   }
   .speed {
     order: 5;

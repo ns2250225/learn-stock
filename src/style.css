@@ -392,6 +392,7 @@ table.tbl tr.clickable { cursor: pointer; }
   box-shadow: 0 0 0 3px var(--border-hi), 8px 8px 0 3px var(--shadow);
   width: min(640px, 100%);
   max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   display: flex;
   flex-direction: column;
 }
@@ -402,6 +403,10 @@ table.tbl tr.clickable { cursor: pointer; }
 .modal-b { padding: 14px; overflow-y: auto; }
 .modal-f { padding: 10px 14px; border-top: 2px solid var(--border); display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
 .toasts { position: fixed; right: 16px; bottom: 16px; z-index: 200; display: flex; flex-direction: column; gap: 8px; width: min(360px, calc(100vw - 32px)); pointer-events: none; }
+@media (max-width: 860px) {
+  /* 避开底部导航条 */
+  .toasts { right: 10px; left: 10px; bottom: calc(64px + env(safe-area-inset-bottom)); width: auto; }
+}
 .toast {
   pointer-events: auto;
   background: var(--panel);
@@ -447,12 +452,12 @@ html.reduce-motion *::after { animation: none !important; transition: none !impo
 .app-rail { grid-area: rail; padding: 14px 14px 14px 0; min-width: 0; }
 .mobile-nav { display: none; }
 @media (max-width: 1280px) {
-  .app-shell { grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: 'top top' 'nav main'; }
-  .app-rail { display: none; }
+  /* !important：组件内 scoped 根样式（如 .sidenav）优先级更高，会盖过这里的 display:none */
+  .app-rail { display: none !important; }
 }
 @media (max-width: 860px) {
   .app-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'top' 'main'; }
-  .app-nav { display: none; }
+  .app-nav { display: none !important; }
   .app-main { padding: 10px 10px 76px; }
   .mobile-nav {
     display: flex;

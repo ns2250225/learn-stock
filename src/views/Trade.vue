@@ -151,4 +151,9 @@ function toggleWatch() {
   .m-hide { display: none; }
   .quote { grid-template-columns: auto 1fr auto 1fr; min-width: 0; width: 100%; }
 }
+/* 窄屏下报价改为两列（标签+数值），避免标签被挤成竖排 */
+@media (max-width: 430px) {
+  .quote { grid-template-columns: auto minmax(0, 1fr); }
+  .quote > span:nth-child(odd) { white-space: nowrap; }
+}
 </style>
